@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Assistant - Disease Prediction</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --secondary: #2196F3;
+            --text: #333;
+            --light-text: #666;
+            --background: #f9f9f9;
+            --card: #fff;
+            --border: #ddd;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --error: #f44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .logo {
+            font-size: 28px;
+            margin-right: 10px;
+            color: white;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background-color: var(--card);
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border 0.3s;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .helper-text {
+            color: var(--light-text);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        button i {
+            margin-right: 8px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: var(--primary);
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-container {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .result-container.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .result-icon {
+            background-color: var(--primary);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.5rem;
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .result-box {
+            background-color: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .result-label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary-dark);
+        }
+
+        .precaution-list {
+            list-style-type: none;
+        }
+
+        .precaution-list li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+
+        .precaution-list li:before {
+            content: "•";
+            color: var(--primary);
+            font-size: 1.5rem;
+            position: absolute;
+            left: 0;
+            top: -5px;
+        }
+
+        .error-message {
+            color: var(--error);
+            font-weight: 500;
+            display: none;
+            margin-top: 10px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            color: var(--light-text);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            header {
+                padding: 20px 0;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo-container">
+                <i class="fas fa-heartbeat logo"></i>
+                <h1>Health Assistant</h1>
+            </div>
+            <p class="subtitle">Predict diseases based on your symptoms</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <form id="prediction-form">
+                <div class="form-group">
+                    <label for="symptoms">Enter your symptoms:</label>
+                    <textarea id="symptoms" name="symptoms" rows="4" placeholder="e.g., fever, cough, headache"></textarea>
+                    <p class="helper-text">Please enter at least 3 symptoms, separated by commas.</p>
+                    <p class="error-message" id="error-message">Please enter at least 3 symptoms separated by commas.</p>
+                </div>
+                <button type="submit">
+                    <i class="fas fa-search"></i>
+                    Predict Disease & Precautions
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing your symptoms...</p>
+            </div>
+        </div>
+
+        <div class="result-container" id="result-container">
+            <div class="card">
+                <div class="result-header">
+                    <div class="result-icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div class="result-title">Prediction Results</div>
+                </div>
+
+                <div class="result-box">
+                    <p class="result-label">Predicted Disease:</p>
+                    <h3 id="disease-result">Loading...</h3>
+                </div>
+
+                <div class="result-box">
+                    <p class="result-label">Recommended Precautions:</p>
+                    <div id="precaution-result">
+                        <ul class="precaution-list" id="precaution-list">
+                            <!-- Precautions will be inserted here -->
+                        </ul>
+                    </div>
+                </div>
+
+                <button id="new-prediction-btn">
+                    <i class="fas fa-redo"></i>
+                    Make a New Prediction
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Health Assistant. This tool is for educational purposes only and should not replace professional medical advice.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Form submission
+            $('#prediction-form').on('submit', function(e) {
+                e.preventDefault();
+
+                const symptoms = $('#symptoms').val().trim();
+                const symptomCount = symptoms.split(',').filter(s => s.trim() !== '').length;
+
+                // Validate symptoms
+                if (!symptoms || symptomCount < 3) {
+                    $('#error-message').show();
+                    return;
+                }
+
+                $('#error-message').hide();
+                $('#loading').show();
+
+                // AJAX request to server
+                $.ajax({
+                    url: '/predict',
+                    type: 'POST',
+                    data: {
+                        symptoms: symptoms
+                    },
+                    success: function(response) {
+                        $('#loading').hide();
+
+                        if (response.error) {
+                            $('#error-message').text(response.error);
+                            $('#error-message').show();
+                            return;
+                        }
+
+                        // Display results
+                        $('#disease-result').text(response.disease);
+
+                        // Process precautions
+                        const precautionsList = $('#precaution-list');
+                        precautionsList.empty();
+
+                        // Split precautions by period or line breaks and create list items
+                        const precautions = response.precaution
+                            .split(/[.;\n]/)
+                            .map(p => p.trim())
+                            .filter(p => p !== '');
+
+                        precautions.forEach(function(precaution) {
+                            precautionsList.append(`<li>${precaution}</li>`);
+                        });
+
+                        // Show results
+                        $('#result-container').addClass('active');
+                    },
+                    error: function() {
+                        $('#loading').hide();
+                        $('#error-message').text('Server error. Please try again later.');
+                        $('#error-message').show();
+                    }
+                });
+            });
+
+            // New prediction button
+            $('#new-prediction-btn').on('click', function() {
+                $('#result-container').removeClass('active');
+                $('#symptoms').val('');
+                setTimeout(function() {
+                    $('#result-container').hide();
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>
